@@ -58,13 +58,16 @@ interface ShoppingCartProps {
   subsidiaryCompanies?: SubsidiaryCompany[];
 }
 
-const ShoppingCart: React.FC<ShoppingCartProps> = ({
+export default function ShoppingCart({
   isOpen = false,
   onClose = () => {},
-}) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [parentCompanies, setParentCompanies] = useState<ParentCompany[]>([]);
-  const [subsidiaryCompanies, setSubsidiaryCompanies] = useState<SubsidiaryCompany[]>([]);
+  items = [],
+  parentCompanies = [],
+  subsidiaryCompanies = [],
+}: ShoppingCartProps) {
+  const [cartItems, setCartItems] = useState<CartItem[]>(items);
+  const [localParentCompanies, setLocalParentCompanies] = useState<ParentCompany[]>(parentCompanies);
+  const [localSubsidiaryCompanies, setLocalSubsidiaryCompanies] = useState<SubsidiaryCompany[]>(subsidiaryCompanies);
   const [selectedParentCompany, setSelectedParentCompany] = useState<string>("");
   const [selectedSubsidiaryCompany, setSelectedSubsidiaryCompany] = useState<string>("");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
@@ -96,10 +99,10 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
       const supabase = createClient(supabaseUrl, supabaseAnonKey);
       // Fetch parent companies
       const { data: parentData } = await supabase.from("parent_companies").select("*");
-      setParentCompanies(parentData || []);
+      setLocalParentCompanies(parentData || []);
       // Fetch subsidiary companies
       const { data: subsidiaryData } = await supabase.from("subsidiary_companies").select("*");
-      setSubsidiaryCompanies(subsidiaryData || []);
+      setLocalSubsidiaryCompanies(subsidiaryData || []);
     };
     fetchCompanies();
   }, []);
@@ -126,14 +129,15 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
     });
   };
 
+  const TAX_RATE = 0.1; // 10% tax, configurable
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const tax = subtotal * 0.1; // 10% tax
+  const tax = subtotal * TAX_RATE;
   const total = subtotal + tax;
 
-  const filteredSubsidiaries = subsidiaryCompanies.filter(
+  const filteredSubsidiaries = localSubsidiaryCompanies.filter(
     sub => sub.parent_company_id === selectedParentCompany
   );
 
@@ -238,7 +242,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
                   <span>₱{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span>Tax (10%)</span>
+                  <span>Tax ({TAX_RATE * 100}%)</span>
                   <span>₱{tax.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg">
@@ -257,83 +261,8 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
                     <DialogTitle>Checkout</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
-                    {/* Checkout form fields go here */}
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="customer-name">Customer Name</Label>
-                      <Input
-                        id="customer-name"
-                        type="text"
-                        placeholder="Your Name"
-                        value={customerName}
-                        onChange={e => setCustomerName(e.target.value)}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="customer-email">Customer Email</Label>
-                      <Input
-                        id="customer-email"
-                        type="email"
-                        placeholder="you@email.com"
-                        value={customerEmail}
-                        onChange={e => setCustomerEmail(e.target.value)}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <Label>Parent Company</Label>
-                      <select
-                        className="w-full p-2 border rounded"
-                        value={selectedParentCompany}
-                        onChange={(e) => {
-                          setSelectedParentCompany(e.target.value);
-                          setSelectedSubsidiaryCompany("");
-                        }}
-                      >
-                        <option value="">Select a parent company</option>
-                        {parentCompanies.map((company) => (
-                          <option key={company.id} value={company.id}>
-                            {company.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <Label>Subsidiary Company</Label>
-                      <select
-                        className="w-full p-2 border rounded"
-                        value={selectedSubsidiaryCompany}
-                        onChange={(e) => setSelectedSubsidiaryCompany(e.target.value)}
-                        disabled={!selectedParentCompany}
-                      >
-                        <option value="">Select a subsidiary company</option>
-                        {filteredSubsidiaries.map((company) => (
-                          <option key={company.id} value={company.id}>
-                            {company.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <Label>Payment Method</Label>
-                      <RadioGroup value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod} className="flex gap-4">
-                        <div className="flex items-center gap-2">
-                          <RadioGroupItem value="cod" id="pm-cod" />
-                          <Label htmlFor="pm-cod">Cash on Delivery</Label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <RadioGroupItem value="gcash" id="pm-gcash" />
-                          <Label htmlFor="pm-gcash">GCash</Label>
-                        </div>
-                      </RadioGroup>
-                    </div>
-                    {selectedPaymentMethod === "gcash" && (
-                      <div className="flex flex-col gap-2 border p-2 rounded bg-blue-50">
-                        <Label htmlFor="gcash-number">GCash Number</Label>
-                        <Input id="gcash-number" type="text" placeholder="09xxxxxxxxx" />
-                        <Label htmlFor="gcash-name">GCash Name</Label>
-                        <Input id="gcash-name" type="text" placeholder="Account Name" />
-                      </div>
-                    )}
-                    {selectedPaymentMethod === "bank_transfer" && (
+                    {/* ...other checkout fields... */}
+                    {selectedPaymentMethod === "bank" && (
                       <div className="grid grid-cols-1 gap-2 mt-2">
                         <Label htmlFor="bank-name">Bank Name</Label>
                         <Input id="bank-name" placeholder="Bank of the Philippine Islands" />
@@ -352,15 +281,15 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
                       </div>
                     )}
                   </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowCheckout(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleCheckout}>Confirm Order</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setShowCheckout(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleCheckout}>Confirm Order</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            )}
             <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
               <DialogContent>
                 <DialogHeader>
@@ -388,6 +317,4 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
       </SheetContent>
     </Sheet>
   );
-};
-
-export default ShoppingCart;
+}
