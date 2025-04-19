@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { X, Minus, Plus, ShoppingBag, CreditCard } from "lucide-react";
 import { Button } from "./ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
+import { Badge } from "./ui/badge";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Separator } from "./ui/separator";
 import {
   Sheet,
@@ -17,9 +14,6 @@ import {
   SheetTrigger,
   SheetClose,
 } from "./ui/sheet";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +21,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from "./ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 
 interface ParentCompany {
   id: string;
@@ -57,427 +58,336 @@ interface ShoppingCartProps {
   subsidiaryCompanies?: SubsidiaryCompany[];
 }
 
-const ShoppingCart = ({
-  isOpen = true,
+const ShoppingCart: React.FC<ShoppingCartProps> = ({
+  isOpen = false,
   onClose = () => {},
-  items = [],
-  parentCompanies = mockParentCompanies,
-  subsidiaryCompanies = mockSubsidiaryCompanies,
-}: ShoppingCartProps) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>(items || []);
+}) => {
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [parentCompanies, setParentCompanies] = useState<ParentCompany[]>([]);
+  const [subsidiaryCompanies, setSubsidiaryCompanies] = useState<SubsidiaryCompany[]>([]);
+  const [selectedParentCompany, setSelectedParentCompany] = useState<string>("");
+  const [selectedSubsidiaryCompany, setSelectedSubsidiaryCompany] = useState<string>("");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
+  const [showCheckout, setShowCheckout] = useState<boolean>(false);
+  const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
 
-  // Load cart items from localStorage on component mount
-  // Optimize cart state management
+  // Always sync cartItems with localStorage
   useEffect(() => {
-    const storedItems = localStorage.getItem("cartItems");
-    if (storedItems) {
-      setCartItems(JSON.parse(storedItems));
-    }
-
-    // Listen for cart updates
-    const handleCartUpdate = () => {
-      const updatedItems = localStorage.getItem("cartItems");
-      if (updatedItems) {
-        setCartItems(JSON.parse(updatedItems));
-      }
+    const loadCart = () => {
+      const stored = localStorage.getItem("cartItems");
+      setCartItems(stored ? JSON.parse(stored) : []);
     };
-
-    window.addEventListener("cartUpdated", handleCartUpdate);
-
-    return () => {
-      window.removeEventListener("cartUpdated", handleCartUpdate);
-    };
+    loadCart();
+    window.addEventListener("cartUpdated", loadCart);
+    return () => window.removeEventListener("cartUpdated", loadCart);
   }, []);
 
-  const [showCheckout, setShowCheckout] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("credit");
-  const [selectedParentCompany, setSelectedParentCompany] =
-    useState<string>("");
-  const [selectedSubsidiaryCompany, setSelectedSubsidiaryCompany] =
-    useState<string>("");
+  // Fetch companies from Supabase on mount
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      // @ts-ignore
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      // @ts-ignore
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      // @ts-ignore
+      const { createClient } = await import("@supabase/supabase-js");
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
+      // Fetch parent companies
+      const { data: parentData } = await supabase.from("parent_companies").select("*");
+      setParentCompanies(parentData || []);
+      // Fetch subsidiary companies
+      const { data: subsidiaryData } = await supabase.from("subsidiary_companies").select("*");
+      setSubsidiaryCompanies(subsidiaryData || []);
+    };
+    fetchCompanies();
+  }, []);
 
+  // --- LOGIC ---
   const updateQuantity = (id: string, newQuantity: number) => {
     if (newQuantity < 1) return;
-
-    const updatedItems = cartItems.map((item) =>
-      item.id === id ? { ...item, quantity: newQuantity } : item,
-    );
-
-    setCartItems(updatedItems);
-
-    // Update localStorage
-    localStorage.setItem("cartItems", JSON.stringify(updatedItems));
-
-    // Trigger cart update event
-    window.dispatchEvent(new Event("cartUpdated"));
+    setCartItems(prev => {
+      const updated = prev.map(item =>
+        item.id === id ? { ...item, quantity: newQuantity } : item
+      );
+      localStorage.setItem("cartItems", JSON.stringify(updated));
+      window.dispatchEvent(new Event("cartUpdated"));
+      return updated;
+    });
   };
 
   const removeItem = (id: string) => {
-    const updatedItems = cartItems.filter((item) => item.id !== id);
-    setCartItems(updatedItems);
-
-    // Update localStorage
-    localStorage.setItem("cartItems", JSON.stringify(updatedItems));
-
-    // Trigger cart update event
-    window.dispatchEvent(new Event("cartUpdated"));
+    setCartItems(prev => {
+      const updated = prev.filter(item => item.id !== id);
+      localStorage.setItem("cartItems", JSON.stringify(updated));
+      window.dispatchEvent(new Event("cartUpdated"));
+      return updated;
+    });
   };
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0,
+    0
   );
-  const tax = subtotal * 0.07; // 7% tax
+  const tax = subtotal * 0.1; // 10% tax
   const total = subtotal + tax;
 
-  const handleCheckout = () => {
-    setShowCheckout(false);
+  const filteredSubsidiaries = subsidiaryCompanies.filter(
+    sub => sub.parent_company_id === selectedParentCompany
+  );
+
+  const handleCheckout = async () => {
+    if (!selectedParentCompany || !selectedSubsidiaryCompany || !selectedPaymentMethod || !customerName.trim() || !customerEmail.trim()) {
+      alert("Please complete all required fields, including your name and email.");
+      return;
+    }
+    // Gather payment details
+    let paymentDetails = {};
+    if (selectedPaymentMethod === "gcash") {
+      const gcashNumber = (document.getElementById("gcash-number") as HTMLInputElement)?.value;
+      const gcashName = (document.getElementById("gcash-name") as HTMLInputElement)?.value;
+      if (!gcashNumber || !gcashName) {
+        alert("Please enter GCash details.");
+        return;
+      }
+      paymentDetails = { gcashNumber, gcashName };
+    }
+    // Create order in Supabase
+    try {
+      // @ts-ignore
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      // @ts-ignore
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      // @ts-ignore
+      const { createClient } = await import("@supabase/supabase-js");
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
+      const { error } = await supabase.from("orders").insert([
+        {
+          customer_name: customerName,
+          customer_email: customerEmail,
+          parent_company_id: selectedParentCompany,
+          subsidiary_company_id: selectedSubsidiaryCompany,
+          items: cartItems,
+          subtotal,
+          tax,
+          total,
+          payment_method: selectedPaymentMethod,
+          payment_details: paymentDetails,
+          status: "pending"
+        }
+      ]);
+      if (error) {
+        alert("Order creation failed: " + error.message);
+        return;
+      }
+    } catch (e) {
+      alert("Order creation failed. Please try again.");
+      return;
+    }
     setShowConfirmation(true);
+    setShowCheckout(false);
+    setCartItems([]);
+    localStorage.removeItem("cartItems");
+    window.dispatchEvent(new Event("cartUpdated"));
   };
 
+  // --- RENDER ---
   return (
-    <div className="bg-background">
-      <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="relative">
-            <ShoppingBag className="h-5 w-5" />
-            {cartItems.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                {cartItems.length}
-              </span>
-            )}
-          </Button>
-        </SheetTrigger>
-        <SheetContent
-          className="w-full sm:max-w-md overflow-y-auto"
-          side="right"
-        >
-          <SheetHeader className="flex flex-row justify-between items-center">
-            <SheetTitle className="text-xl font-bold flex items-center">
-              <ShoppingBag className="mr-2 h-5 w-5" /> Shopping Cart
-            </SheetTitle>
-          </SheetHeader>
-
-          <div className="mt-6 flex flex-col gap-5">
-            {cartItems.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-muted-foreground">Your cart is empty</p>
-                <SheetClose asChild>
-                  <Button className="mt-4">Continue Shopping</Button>
-                </SheetClose>
-              </div>
-            ) : (
-              <>
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle>Shopping Cart</SheetTitle>
+        </SheetHeader>
+        {cartItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full py-8">
+            <ShoppingBag className="w-12 h-12 text-gray-400 mb-4" />
+            <p className="text-lg font-medium text-gray-900">Your cart is empty</p>
+            <p className="text-sm text-gray-500 mt-1">
+              Start adding items to your cart
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="space-y-6">
+              {/* Cart Items List */}
+              <div className="divide-y divide-gray-200">
                 {cartItems.map((item) => (
-                  <Card key={item.id} className="overflow-hidden">
-                    <div className="flex p-4">
-                      <div className="h-20 w-20 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="h-full w-full object-cover"
-                        />
+                  <div key={item.id} className="flex items-center py-4">
+                    <img src={item.image} alt={item.name} className="w-16 h-16 rounded object-cover mr-4" />
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">{item.name}</div>
+                      <div className="text-gray-600 text-sm">₱{item.price.toFixed(2)} each</div>
+                      <div className="flex items-center mt-2">
+                        <Button size="icon" variant="outline" onClick={() => updateQuantity(item.id, item.quantity - 1)}><Minus size={16} /></Button>
+                        <span className="mx-2 w-6 text-center">{item.quantity}</span>
+                        <Button size="icon" variant="outline" onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus size={16} /></Button>
                       </div>
-                      <div className="ml-4 flex flex-col flex-1">
-                        <h3 className="font-medium">{item.name}</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          ₱{item.price.toFixed(2)}
-                        </p>
-                        <div className="flex items-center mt-auto">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8 rounded-full"
-                            onClick={() =>
-                              updateQuantity(item.id, item.quantity - 1)
-                            }
-                          >
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          <span className="mx-3">{item.quantity}</span>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8 rounded-full"
-                            onClick={() =>
-                              updateQuantity(item.id, item.quantity + 1)
-                            }
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 self-start"
-                        onClick={() => removeItem(item.id)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
                     </div>
-                  </Card>
+                    <div className="flex flex-col items-end ml-4">
+                      <div className="text-gray-900 font-semibold">₱{(item.price * item.quantity).toFixed(2)}</div>
+                      <Button size="icon" variant="ghost" onClick={() => removeItem(item.id)}><X size={16} /></Button>
+                    </div>
+                  </div>
                 ))}
-
-                <Separator className="my-4" />
-
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Subtotal</span>
-                    <span>₱{subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Tax (7%)</span>
-                    <span>₱{tax.toFixed(2)}</span>
-                  </div>
-                  <Separator className="my-2" />
-                  <div className="flex justify-between font-medium">
-                    <span>Total</span>
-                    <span>₱{total.toFixed(2)}</span>
-                  </div>
+              </div>
+              {/* Cart Summary */}
+              <div className="py-4 border-t">
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Subtotal</span>
+                  <span>₱{subtotal.toFixed(2)}</span>
                 </div>
-
-                <Button
-                  className="w-full mt-4"
-                  size="lg"
-                  onClick={() => setShowCheckout(true)}
-                >
-                  Proceed to Checkout
-                </Button>
-              </>
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      {/* Checkout Dialog */}
-      <Dialog open={showCheckout} onOpenChange={setShowCheckout}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Checkout</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input id="name" placeholder="John Doe" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="john@example.com" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="parent-company">Parent Company</Label>
-              <select
-                id="parent-company"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value={selectedParentCompany}
-                onChange={(e) => {
-                  setSelectedParentCompany(e.target.value);
-                  setSelectedSubsidiaryCompany("");
-                }}
-              >
-                <option value="">Select Parent Company</option>
-                {parentCompanies.map((company) => (
-                  <option key={company.id} value={company.id}>
-                    {company.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="subsidiary-company">Subsidiary Company</Label>
-              <select
-                id="subsidiary-company"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value={selectedSubsidiaryCompany}
-                onChange={(e) => setSelectedSubsidiaryCompany(e.target.value)}
-                disabled={!selectedParentCompany}
-              >
-                <option value="">Select Subsidiary Company</option>
-                {subsidiaryCompanies
-                  .filter(
-                    (company) =>
-                      company.parent_company_id === selectedParentCompany,
-                  )
-                  .map((company) => (
-                    <option key={company.id} value={company.id}>
-                      {company.name}
-                    </option>
-                  ))}
-              </select>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="address">Shipping Address</Label>
-              <Input id="address" placeholder="123 Medical Center Dr" />
-            </div>
-            <div className="grid gap-2">
-              <Label>Payment Method</Label>
-              <RadioGroup
-                value={paymentMethod}
-                onValueChange={setPaymentMethod}
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="credit" id="credit" />
-                  <Label htmlFor="credit">Credit Card</Label>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Tax (10%)</span>
+                  <span>₱{tax.toFixed(2)}</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="bank" id="bank" />
-                  <Label htmlFor="bank">Bank Transfer</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="invoice" id="invoice" />
-                  <Label htmlFor="invoice">
-                    Invoice (For Healthcare Institutions)
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-            {paymentMethod === "credit" && (
-              <div className="grid gap-2">
-                <Label htmlFor="card">Card Number</Label>
-                <Input id="card" placeholder="**** **** **** ****" />
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label htmlFor="expiry">Expiry Date</Label>
-                    <Input id="expiry" placeholder="MM/YY" />
-                  </div>
-                  <div>
-                    <Label htmlFor="cvc">CVC</Label>
-                    <Input id="cvc" placeholder="123" />
-                  </div>
+                <div className="flex justify-between font-bold text-lg">
+                  <span>Total</span>
+                  <span>₱{total.toFixed(2)}</span>
                 </div>
               </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCheckout(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleCheckout}>Complete Order</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Order Confirmation Dialog */}
-      <Dialog
-        open={showConfirmation}
-        onOpenChange={(open) => {
-          setShowConfirmation(open);
-          if (!open) {
-            // Reset cart state when dialog is closed
-            setCartItems([]);
-            localStorage.removeItem("cartItems");
-            window.dispatchEvent(new Event("cartUpdated"));
-            onClose();
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Order Confirmed!</DialogTitle>
-          </DialogHeader>
-          <div className="py-6 text-center">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <CreditCard className="h-8 w-8 text-green-600" />
-            </div>
-            <p className="mb-2">Thank you for your order.</p>
-            <p className="text-muted-foreground text-sm">
-              Order #ORD-{Math.floor(Math.random() * 10000)}
-            </p>
-            <p className="text-muted-foreground text-sm mt-1">
-              You will receive an email confirmation shortly.
-            </p>
-            <div className="mt-6 p-4 bg-muted rounded-lg">
-              <div className="flex justify-between font-medium">
-                <span>Total Amount:</span>
-                <span>₱{total.toFixed(2)}</span>
-              </div>
-              <div className="text-sm text-muted-foreground mt-2">
-                {cartItems.length} items
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <SheetClose asChild>
-              <Button
-                onClick={() => {
-                  setShowConfirmation(false);
-                  setCartItems([]);
-                  localStorage.removeItem("cartItems");
-                  window.dispatchEvent(new Event("cartUpdated"));
-                }}
-                className="w-full"
-              >
-                Continue Shopping
+              <Button className="w-full" onClick={() => setShowCheckout(true)}>
+                Checkout
               </Button>
-            </SheetClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+            </div>
+            {showCheckout && (
+              <Dialog open={showCheckout} onOpenChange={setShowCheckout}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Checkout</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    {/* Checkout form fields go here */}
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="customer-name">Customer Name</Label>
+                      <Input
+                        id="customer-name"
+                        type="text"
+                        placeholder="Your Name"
+                        value={customerName}
+                        onChange={e => setCustomerName(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="customer-email">Customer Email</Label>
+                      <Input
+                        id="customer-email"
+                        type="email"
+                        placeholder="you@email.com"
+                        value={customerEmail}
+                        onChange={e => setCustomerEmail(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <Label>Parent Company</Label>
+                      <select
+                        className="w-full p-2 border rounded"
+                        value={selectedParentCompany}
+                        onChange={(e) => {
+                          setSelectedParentCompany(e.target.value);
+                          setSelectedSubsidiaryCompany("");
+                        }}
+                      >
+                        <option value="">Select a parent company</option>
+                        {parentCompanies.map((company) => (
+                          <option key={company.id} value={company.id}>
+                            {company.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <Label>Subsidiary Company</Label>
+                      <select
+                        className="w-full p-2 border rounded"
+                        value={selectedSubsidiaryCompany}
+                        onChange={(e) => setSelectedSubsidiaryCompany(e.target.value)}
+                        disabled={!selectedParentCompany}
+                      >
+                        <option value="">Select a subsidiary company</option>
+                        {filteredSubsidiaries.map((company) => (
+                          <option key={company.id} value={company.id}>
+                            {company.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <Label>Payment Method</Label>
+                      <RadioGroup value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod} className="flex gap-4">
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="cod" id="pm-cod" />
+                          <Label htmlFor="pm-cod">Cash on Delivery</Label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="gcash" id="pm-gcash" />
+                          <Label htmlFor="pm-gcash">GCash</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                    {selectedPaymentMethod === "gcash" && (
+                      <div className="flex flex-col gap-2 border p-2 rounded bg-blue-50">
+                        <Label htmlFor="gcash-number">GCash Number</Label>
+                        <Input id="gcash-number" type="text" placeholder="09xxxxxxxxx" />
+                        <Label htmlFor="gcash-name">GCash Name</Label>
+                        <Input id="gcash-name" type="text" placeholder="Account Name" />
+                      </div>
+                    )}
+                    {selectedPaymentMethod === "bank_transfer" && (
+                      <div className="grid grid-cols-1 gap-2 mt-2">
+                        <Label htmlFor="bank-name">Bank Name</Label>
+                        <Input id="bank-name" placeholder="Bank of the Philippine Islands" />
+                        <Label htmlFor="bank-account">Account Number</Label>
+                        <Input id="bank-account" placeholder="1234567890" maxLength={20} />
+                        <Label htmlFor="bank-holder">Account Holder Name</Label>
+                        <Input id="bank-holder" placeholder="Account Holder" />
+                      </div>
+                    )}
+                    {selectedPaymentMethod === "gcash" && (
+                      <div className="grid grid-cols-1 gap-2 mt-2">
+                        <Label htmlFor="gcash-number">GCash Number</Label>
+                        <Input id="gcash-number" placeholder="09XXXXXXXXX" maxLength={11} />
+                        <Label htmlFor="gcash-name">Account Name</Label>
+                        <Input id="gcash-name" placeholder="GCash Account Name" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowCheckout(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleCheckout}>Confirm Order</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Order Confirmed!</DialogTitle>
+                </DialogHeader>
+                <div className="py-4">
+                  <p>Thank you for your order. Your items will be processed soon.</p>
+                </div>
+                <DialogFooter>
+                  <Button
+                    onClick={() => {
+                      setShowConfirmation(false);
+                      setCartItems([]);
+                      localStorage.removeItem("cartItems");
+                      window.dispatchEvent(new Event("cartUpdated"));
+                    }}
+                  >
+                    Close
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>
+        )}
+      </SheetContent>
+    </Sheet>
   );
 };
-
-// Mock data for parent companies
-const mockParentCompanies: ParentCompany[] = [
-  {
-    id: "1",
-    name: "MediCorp Philippines",
-    address: "123 Ayala Avenue, Makati City, Metro Manila, Philippines",
-  },
-  {
-    id: "2",
-    name: "Global Pharma Holdings",
-    address: "456 Ortigas Center, Pasig City, Metro Manila, Philippines",
-  },
-  {
-    id: "3",
-    name: "HealthTech Enterprises",
-    address: "789 Bonifacio Global City, Taguig, Metro Manila, Philippines",
-  },
-];
-
-// Mock data for subsidiary companies
-const mockSubsidiaryCompanies: SubsidiaryCompany[] = [
-  {
-    id: "1",
-    name: "MediCorp General Hospital",
-    address: "101 Quezon Avenue, Quezon City, Metro Manila, Philippines",
-    parent_company_id: "1",
-  },
-  {
-    id: "2",
-    name: "MediCorp Community Clinic",
-    address: "202 Taft Avenue, Manila, Philippines",
-    parent_company_id: "1",
-  },
-  {
-    id: "3",
-    name: "Global Pharma Research Center",
-    address: "303 Alabang-Zapote Road, Muntinlupa City, Philippines",
-    parent_company_id: "2",
-  },
-  {
-    id: "4",
-    name: "Global Pharma Distribution",
-    address: "404 Shaw Boulevard, Mandaluyong City, Philippines",
-    parent_company_id: "2",
-  },
-  {
-    id: "5",
-    name: "HealthTech Medical Center",
-    address: "505 EDSA, Quezon City, Philippines",
-    parent_company_id: "3",
-  },
-  {
-    id: "6",
-    name: "HealthTech Pharmacy Solutions",
-    address: "606 Marcos Highway, Marikina City, Philippines",
-    parent_company_id: "3",
-  },
-];
 
 export default ShoppingCart;

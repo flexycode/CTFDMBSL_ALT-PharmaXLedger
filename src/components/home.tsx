@@ -1,50 +1,66 @@
 import React, { useState, useEffect } from "react";
-import { Search, ShoppingCart, User, Menu, X } from "lucide-react";
+import { Search, User, Menu, X, CheckCircle, ShoppingBag } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { useToast } from "./ui/use-toast";
+import { Badge } from "./ui/badge";
 import MedicineCatalog from "./MedicineCatalog";
-import { default as CartComponent } from "./ShoppingCart";
+import ShoppingCart from "./ShoppingCart";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(true); // Default to true to show catalog without requiring sign in
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+  const stored = localStorage.getItem("isAuthenticated");
+  return stored === "true";
+});
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
-  const [userName, setUserName] = useState("Dr. Senku Ishigami"); // Updated default name
+  const [userName, setUserName] = useState("Guest");
 
-  // Get cart items count from localStorage
+  // Cart management
   const [cartItemsCount, setCartItemsCount] = useState(0);
+  const [cartTotal, setCartTotal] = useState(0);
 
-  // Optimize cart item retrieval and event handling
+  // Enhanced cart management
   useEffect(() => {
-    // Initial cart count
+    // Initial cart setup
     const storedItems = localStorage.getItem("cartItems");
     if (storedItems) {
-      setCartItemsCount(JSON.parse(storedItems).length);
+      const items = JSON.parse(storedItems);
+      setCartItemsCount(items.length);
+      setCartTotal(items.reduce((total: number, item: any) => total + (item.price * item.quantity), 0));
     }
 
-    // Listen for cart updates
+    // Cart update handler
     const handleCartUpdate = () => {
       const updatedItems = localStorage.getItem("cartItems");
       if (updatedItems) {
-        setCartItemsCount(JSON.parse(updatedItems).length);
+        const items = JSON.parse(updatedItems);
+        setCartItemsCount(items.length);
+        setCartTotal(items.reduce((total: number, item: any) => total + (item.price * item.quantity), 0));
+        
+        // Show toast notification
+        toast({
+          title: "Cart Updated",
+          description: `${items.length} items in cart - Total: $${items.reduce((total: number, item: any) => total + (item.price * item.quantity), 0).toFixed(2)}`,
+          duration: 2000,
+        });
       } else {
         setCartItemsCount(0);
+        setCartTotal(0);
       }
     };
 
     window.addEventListener("cartUpdated", handleCartUpdate);
-
-    return () => {
-      window.removeEventListener("cartUpdated", handleCartUpdate);
-    };
-  }, []);
+    return () => window.removeEventListener("cartUpdated", handleCartUpdate);
+  }, [toast]);
 
   // Mock categories for the navigation
   const categories = [
@@ -81,6 +97,7 @@ const Home = () => {
   const handleLogin = () => {
     setIsAuthenticated(true);
     localStorage.setItem("isAuthenticated", "true");
+    navigate("/home"); // Redirect to home page after login
   };
 
   const handleLogout = () => {
@@ -90,6 +107,9 @@ const Home = () => {
     window.dispatchEvent(new Event("cartUpdated"));
     navigate("/"); // Redirect to landing page on logout
   };
+
+  // Browsing as Guest: do not create session or set isAuthenticated to true
+  // (No code required here, just ensure default is false unless login)
 
   // Optimize scroll behavior
   const navigateToCatalogSection = () => {
@@ -138,19 +158,30 @@ const Home = () => {
               </form>
 
               {/* Cart */}
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative">
-                    <ShoppingCart className="h-5 w-5" />
-                    {cartItemsCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        {cartItemsCount}
-                      </span>
-                    )}
-                  </Button>
-                </SheetTrigger>
+              <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
+                <Button
+                  variant="ghost"
+                  className="relative group"
+                  onClick={toggleCart}
+                >
+                  <span className="sr-only">View Cart</span>
+                  <ShoppingBag className="w-6 h-6" />
+                  {cartItemsCount > 0 && (
+                    <Badge
+                      variant="destructive"
+                      className="absolute -top-2 -right-2 transition-all duration-200 group-hover:scale-110"
+                    >
+                      {cartItemsCount}
+                    </Badge>
+                  )}
+                  {cartTotal > 0 && (
+                    <div className="absolute top-8 right-0 bg-background border rounded-md px-2 py-1 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      ₱{cartTotal.toFixed(2)}
+                    </div>
+                  )}
+                </Button>
                 <SheetContent side="right" className="w-full sm:max-w-md p-0">
-                  <CartComponent />
+                  <ShoppingCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
                 </SheetContent>
               </Sheet>
 

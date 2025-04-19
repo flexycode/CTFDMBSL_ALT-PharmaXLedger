@@ -175,9 +175,25 @@ const MedicineCatalog: React.FC<MedicineCatalogProps> = ({
   ]);
 
   const handleAddToCart = (medicine: Medicine) => {
-    console.log("Adding to cart:", medicine);
-    // Implement add to cart functionality
+    // Get current cart from localStorage
+    const cartItems = JSON.parse(localStorage.getItem("cartItems") || "[]");
+    const existingIndex = cartItems.findIndex((item: any) => item.id === medicine.id);
+    if (existingIndex >= 0) {
+      // Always set quantity to 1 if added again
+      cartItems[existingIndex].quantity = 1;
+    } else {
+      cartItems.push({
+        id: medicine.id,
+        name: medicine.name,
+        price: medicine.price,
+        quantity: 1,
+        image: medicine.imageUrl,
+      });
+    }
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+    window.dispatchEvent(new Event("cartUpdated"));
   };
+
 
   return (
     <div className="w-full bg-white p-4 rounded-lg shadow-sm">
@@ -293,6 +309,7 @@ const MedicineCatalog: React.FC<MedicineCatalogProps> = ({
                     inStock={medicine.inStock}
                     imageUrl={medicine.imageUrl}
                     onAddToCart={() => handleAddToCart(medicine)}
+                    onViewDetails={() => {}}
                   />
                 ))}
               </div>

@@ -138,6 +138,25 @@ const AdminDashboard = () => {
     }
   }, [activeTab]);
 
+  // Real-time order updates
+  useEffect(() => {
+    // Only subscribe if on orders tab
+    if (activeTab !== "orders") return;
+    const channel = supabase
+      .channel('realtime-orders')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        payload => {
+          fetchOrders();
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeTab]);
+
   const fetchMedicines = async () => {
     setLoading(true);
     try {
@@ -624,7 +643,12 @@ const AdminDashboard = () => {
       : true,
   );
 
-  const filteredOrders = recentOrders.filter((order) =>
+  const filteredOrders = recentOrders
+  .map(order => ({
+    ...order,
+    status: (order.status || "pending") as "pending" | "processing" | "shipped" | "delivered" | "cancelled"
+  }))
+  .filter((order) =>
     orderSearchTerm
       ? order.customer_name
           ?.toLowerCase()

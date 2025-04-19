@@ -141,16 +141,6 @@ const MedicineCard = ({
 
             <Button
               onClick={() => {
-                // Check if user is authenticated
-                const isAuthenticated =
-                  localStorage.getItem("isAuthenticated") === "true";
-
-                if (!isAuthenticated) {
-                  // Redirect to sign in page if not authenticated
-                  window.location.href = "/signin";
-                  return;
-                }
-
                 onAddToCart(id);
                 // Add item to cart in localStorage
                 const cartItems = JSON.parse(
