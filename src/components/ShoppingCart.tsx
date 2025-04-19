@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import * as React from "react";
+import { useState, useEffect } from "react";
 import { X, Minus, Plus, ShoppingBag, CreditCard } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -200,7 +201,7 @@ export default function ShoppingCart({
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-        <SheetHeader>
+        <SheetHeader className="">
           <SheetTitle>Shopping Cart</SheetTitle>
         </SheetHeader>
         {cartItems.length === 0 ? (
