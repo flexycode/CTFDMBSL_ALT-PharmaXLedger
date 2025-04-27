@@ -59,6 +59,9 @@ npm run preview
 - Vite
 - Tailwind CSS
 - Radix UI
+- Supabase
+- SQL
+- Github
 
 ## License
 This project is for demonstration and educational purposes.
