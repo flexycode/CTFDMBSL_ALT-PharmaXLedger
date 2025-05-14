@@ -39,6 +39,28 @@ CONVEX_RESEND_API_KEY=your_resend_key
 # Add other required environment variables
 ```
 
+Answer for `.env.local`
+```
+# ✨ Environment variables
+ 
+VITE_CONVEX_URL=https://energized-labrador-185.convex.cloud
+
+# ✨ OpenAI
+CONVEX_OPENAI_API_KEY=5bdb2167-0e37-4034-f494-38c2f34571f8
+
+CONVEX_OPENAI_BASE_URL=https://academic-mammoth-217.convex.site/openai-proxy
+
+CONVEX_RESEND_API_KEY=a96296f3-7d6f-481e-30cd-f2bb55153703
+
+SITE_URL=http://localhost:5173
+
+# Deployment used by `npx convex dev`
+CONVEX_DEPLOYMENT=dev:energized-labrador-185
+
+CONVEX_DEPLOY_KEY=project:flexyledger-gmail-com:my-project-chef-a417e|eyJ2MiI6IjUxZDJhNmFlMWJiNzQ4MGJiMmEzMzFmNzUxMDY4MjVkIn0=
+```
+
+
 ### 🚀 4. Start the Development Server
 ```bash
 npm run dev
