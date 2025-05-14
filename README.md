@@ -1,6 +1,8 @@
 # 🏥 PharmaXLedger
 
-A modern pharmacy inventory management system built with React, Convex, and TailwindCSS.
+A modern pharmaceutical supplychain management system built with React, Convex, and TailwindCSS.
+
+Link of deployed website:https://energized-labrador-185.convex.app/
 
 ## ✨ Features
 
