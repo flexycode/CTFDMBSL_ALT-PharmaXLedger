@@ -40,7 +40,7 @@ CONVEX_RESEND_API_KEY=your_resend_key
 ```
 
 Answer for `.env.local`
-```
+```env
 # ✨ Environment variables
  
 VITE_CONVEX_URL=https://energized-labrador-185.convex.cloud
@@ -58,6 +58,7 @@ SITE_URL=http://localhost:5173
 CONVEX_DEPLOYMENT=dev:energized-labrador-185
 
 CONVEX_DEPLOY_KEY=project:flexyledger-gmail-com:my-project-chef-a417e|eyJ2MiI6IjUxZDJhNmFlMWJiNzQ4MGJiMmEzMzFmNzUxMDY4MjVkIn0=
+
 ```
 
 
