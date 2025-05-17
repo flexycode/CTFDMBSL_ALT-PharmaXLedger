@@ -149,3 +149,10 @@ npm install
 ## License
 
 MIT License
+
+
+## For Editing
+Front Page
+ - Just Sign In credentials no Sign up and no anonymouse viewing
+
+After front page 
