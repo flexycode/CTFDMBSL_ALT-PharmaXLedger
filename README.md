@@ -155,4 +155,5 @@ MIT License
 Front Page
  - Just Sign In credentials no Sign up and no anonymouse viewing
 
-After front page 
+Dashboard
+- separated dashboards depending on user credentials
