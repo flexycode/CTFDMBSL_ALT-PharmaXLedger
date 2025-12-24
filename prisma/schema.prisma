@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  MANUFACTURER
+  DISTRIBUTOR
+  PHARMACIST
+  PATIENT
+}
+
+enum ShipmentStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+  RECALLED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      UserRole @default(PATIENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  managedDrugs    Drug[]     @relation("Manufacturer")
+  ledgerEntries   LedgerEntry[]
+}
+
+model Drug {
+  id                  String   @id @default(cuid())
+  name                String
+  description         String?
+  sku                 String   @unique
+  batchNumber         String
+  expiryDate          DateTime
+  manufacturerId      String
+  manufacturer        User     @relation("Manufacturer", fields: [manufacturerId], references: [id])
+  storageRequirements String?
+  
+  shipments           Shipment[]
+  ledgerEntries       LedgerEntry[]
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model Shipment {
+  id             String         @id @default(cuid())
+  trackingNumber String         @unique
+  status         ShipmentStatus @default(PENDING)
+  currentHolderId String
+  drugId         String
+  drug           Drug           @relation(fields: [drugId], references: [id])
+  
+  ledgerEntries  LedgerEntry[]
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model LedgerEntry {
+  id          String   @id @default(cuid())
+  timestamp   DateTime @default(now())
+  shipmentId  String?
+  shipment    Shipment? @relation(fields: [shipmentId], references: [id])
+  drugId      String
+  drug        Drug      @relation(fields: [drugId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  action      String    // e.g., "MANUFACTURED", "SHIPPED", "RECEIVED", "DISPENSED"
+  details     String?
+  signature   String?   // Digital signature for Phase 1 simulation
+  location    String?
+}

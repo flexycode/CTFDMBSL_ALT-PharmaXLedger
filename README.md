@@ -6,7 +6,10 @@
 
 PharmaXLedger is a state-of-the-art pharmaceutical supply chain management platform designed to ensure the integrity, transparency, and traceability of life-saving medications. Built with a focus on high-stakes tracking, it bridges the gap between traditional centralized management and future decentralized immutable ledgers.
 
+![PharmaXLedger Landing Page](public/screenshots/landing-page.png)
+
 ---
+
 
 ## 🏗️ Architectural Overview
 
@@ -16,10 +19,22 @@ PharmaXLedger is a state-of-the-art pharmaceutical supply chain management platf
 - **Authentication**: Role-based access control (RBAC) via Supabase Auth
 - **UI/UX**: Tailwind CSS + Shadcn UI + Framer Motion for a premium, high-fidelity experience.
 
-### Phase 2: Decentralized Evolution (Future Roadmap)
-- **Web3 Integration**: Migrating the transaction ledger to a blockchain (Ethereum/Polygon/Hyperledger).
+### Phase 2: Decentralized Evolution
+- **Web3 Integration**: Migrating the ledger to a blockchain (Polygon/Ethereum) for immutability.
 - **Smart Contracts**: Automated compliance and payment triggers upon verified delivery.
-- **DIDs**: Decentralized Identifiers for all stakeholders (Manufacturers, Wholesalers, Pharmacies).
+- **DIDs**: Decentralized Identifiers for all stakeholders.
+
+### Phase 3: IoT & AI Sentinel
+- **IoT Integration**: Live temperature and location tracking via smart sensors.
+- **AI Monitoring**: Predictive analytics for shelf-life and route anomaly detection.
+
+### Phase 4: Global Compliance & Interop
+- **GS1 Standards**: Universal pharmaceutical identification compliance.
+- **Regulatory Vault**: Automated FDA/EMA compliance reporting.
+
+### Phase 5: Sustainable Ecosystem
+- **ESG Ledger**: Tracking carbon footprint of medical logistics.
+- **Supply Chain Finance**: Verified delivery proofs unlocking instant liquidity.
 
 ---
 
@@ -67,8 +82,9 @@ PharmaXLedger/
 
 This project is a high-stakes collaborative effort. We welcome contributions that maintain the highest standards of code integrity and security.
 
-- **Lead Developer**: [flexycode](https://github.com/flexycode)
-- **Architecture**: AI Strategic Pair
+- **Lead Developer**: [Jay Arre Talosig](https://github.com/flexycode)
+- **QA Lead**: [Brian Carlo De Vera](https://github.com/scarfer14)
+- **Architecture**: [Artificial Ledger Technology](https://github.com/Artificial-Ledger-Technology)  
 
 ---
 
