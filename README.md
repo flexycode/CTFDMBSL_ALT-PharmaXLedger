@@ -1,159 +1,82 @@
-# 🏥 PharmaXLedger
+# 🏥 PharmaXLedger: Secure Pharmaceutical Supply Chain
 
-A modern pharmaceutical supplychain management system built with React, Convex, Supabase and TailwindCSS.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version: Phase 1](https://img.shields.io/badge/Version-Phase%201%20(Dev)-blue.svg)](https://pharmaxledger.ai)
+[![Next.js 15](https://img.shields.io/badge/Framework-Next.js%2015-black.svg)](https://nextjs.org/)
 
-Link of deployed website:https://energized-labrador-185.convex.app/
+PharmaXLedger is a state-of-the-art pharmaceutical supply chain management platform designed to ensure the integrity, transparency, and traceability of life-saving medications. Built with a focus on high-stakes tracking, it bridges the gap between traditional centralized management and future decentralized immutable ledgers.
 
-## ✨ Features
+---
 
-- 📊 Real-time inventory management
-- 📦 Order processing workflow
-- 👥 Supplier management
-- 🔔 Low stock alerts
-- 🔐 User authentication
+## 🏗️ Architectural Overview
 
-## 🛠️ Prerequisites
+### Phase 1: Robust Centralized Ledger
+- **Framework**: Next.js 15 (App Router, Server Actions)
+- **Database**: Supabase (PostgreSQL) with Prisma ORM
+- **Authentication**: Role-based access control (RBAC) via Supabase Auth
+- **UI/UX**: Tailwind CSS + Shadcn UI + Framer Motion for a premium, high-fidelity experience.
 
-- Node.js (v16 or higher)
-- npm or yarn
-- A Convex account (free tier available at [convex.dev](https://convex.dev))
+### Phase 2: Decentralized Evolution (Future Roadmap)
+- **Web3 Integration**: Migrating the transaction ledger to a blockchain (Ethereum/Polygon/Hyperledger).
+- **Smart Contracts**: Automated compliance and payment triggers upon verified delivery.
+- **DIDs**: Decentralized Identifiers for all stakeholders (Manufacturers, Wholesalers, Pharmacies).
 
-## 🚀 Quick Start Guide
+---
 
-### 📥 1. Clone and Navigate
-```bash
-git clone <repository-url>
-cd pharmaxledger
+## 📦 Core Data Entities
+
+| Entity | Description | Key Attributes |
+| :--- | :--- | :--- |
+| **Drug** | Major life-saving medications | Humira, Keytruda, Eliquis, Revlimid, Stelara, Opdivo |
+| **Shipment** | Tracking the movement of batches | Tracking ID, Status, Temperature sensor data (Future) |
+| **Handover** | Ledger entry for change of custody | Timestamp, Digital Signature, Location Coordinates |
+| **Stakeholder** | Participants in the chain | Manufacturer, Distributor, Pharmacist, Patient |
+
+---
+
+## 📂 Project Repository Structure
+
+```text
+PharmaXLedger/
+├── app/                # Next.js 15 App Router
+│   ├── (auth)/         # Login, Registration paths
+│   ├── dashboard/      # Stakeholder-specific views
+│   ├── api/            # Server Action endpoints
+│   └── layout.tsx      # Global theme & glassmorphism layout
+├── components/         # Premium Shadcn UI components
+├── lib/                # Prisma client, validation logic, utils
+├── prisma/             # Schema definitions and migrations
+├── public/             # High-res assets & drug logos
+└── styles/             # Global CSS & Tailwind config
 ```
 
-### 📦 2. Install Dependencies
-```bash
-npm install
-```
+---
 
-### 🔑 3. Environment Setup
-Create a `.env.local` file in the root directory with the following content:
-```env
-VITE_CONVEX_URL=http://localhost:3210
-CONVEX_OPENAI_API_KEY=your_openai_key
-CONVEX_OPENAI_BASE_URL=your_openai_base_url
-CONVEX_RESEND_API_KEY=your_resend_key
-# Add other required environment variables
-```
+## 📜 Changelog
 
-Answer for `.env.local`
-```env
-# ✨ Environment variables
- 
-VITE_CONVEX_URL=https://energized-labrador-185.convex.cloud
+### [v1.0.0-phase1] - 2025-12-24
+- **Refactor**: Complete slate of the previous Convex/Vite codebase.
+- **Added**: Next.js 15 project scaffolding.
+- **Added**: Prisma schema for supply chain traceability.
+- **Added**: Premium UI design system using Framer Motion.
+- **Project Goal**: Establish a rock-solid Phase 1 foundation for upcoming Web3 integration.
 
-# ✨ OpenAI
-CONVEX_OPENAI_API_KEY=5bdb2167-0e37-4034-f494-38c2f34571f8
+---
 
-CONVEX_OPENAI_BASE_URL=https://academic-mammoth-217.convex.site/openai-proxy
+## 🤝 Contribution & Team
 
-CONVEX_RESEND_API_KEY=a96296f3-7d6f-481e-30cd-f2bb55153703
+This project is a high-stakes collaborative effort. We welcome contributions that maintain the highest standards of code integrity and security.
 
-SITE_URL=http://localhost:5173
+- **Lead Developer**: [flexycode](https://github.com/flexycode)
+- **Architecture**: AI Strategic Pair
 
-# Deployment used by `npx convex dev`
-CONVEX_DEPLOYMENT=dev:energized-labrador-185
+---
 
-CONVEX_DEPLOY_KEY=project:flexyledger-gmail-com:my-project-chef-a417e|eyJ2MiI6IjUxZDJhNmFlMWJiNzQ4MGJiMmEzMzFmNzUxMDY4MjVkIn0=
+## 📄 License
 
-```
+This project is licensed under the **MIT License**. See the `LICENSE` file for details.
 
+---
 
-### 🚀 4. Start the Development Server
-```bash
-npm run dev
-```
-
-### 🌐 5. Access the Application
-Open your browser and navigate to:
-```
-http://localhost:5173
-```
-
-## 🔍 Troubleshooting
-
-### 🐛 Common Issues
-
-#### 🔌 Connection Issues
-- Ensure Convex dev server is running (`npx convex dev`)
-- Verify environment variables in `.env.local`
-- Check browser console for errors
-
-#### 🔄 Cache Problems
-```bash
-# Clear npm cache
-npm cache clean --force
-
-# Remove node_modules and reinstall
-rm -rf node_modules
-npm install
-```
-
-## 📂 Project Structure
-
-- `/convex` - Backend functions and schema
-  - `schema.ts` - Database schema
-  - `medicines.ts` - Medicine-related functions
-  - `orders.ts` - Order-related functions
-  - `suppliers.ts` - Supplier-related functions
-- `/src` - Frontend React components
-  - `/components` - Reusable UI components
-  - `App.tsx` - Main application component
-
-## Database Schema
-
-### Medicines
-- name: string
-- genericName: string
-- batchNumber: string
-- quantity: number
-- expiryDate: number
-- manufacturer: string
-- location: string
-- minimumStock: number
-- unitPrice: number
-- createdBy: Id<"users">
-
-### Orders
-- status: "pending" | "approved" | "rejected" | "shipped" | "delivered"
-- requestedBy: Id<"users">
-- approvedBy?: Id<"users">
-- items: Array<{ medicineId: Id<"medicines">, quantity: number }>
-- deliveryLocation: string
-- requestDate: number
-- approvalDate?: number
-- notes?: string
-
-### Suppliers
-- name: string
-- contactPerson: string
-- email: string
-- phone: string
-- address: string
-- status: "active" | "inactive"
-- createdBy: Id<"users">
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## License
-
-MIT License
-
-
-## For Editing
-Front Page
- - Just Sign In credentials no Sign up and no anonymouse viewing
-
-Dashboard
-- separated dashboards depending on user credentials
+> [!IMPORTANT]
+> This repository is currently in **Phase 1 (Development)**. The focus is on API stability and UI excellence before moving to the blockchain integration phase.
