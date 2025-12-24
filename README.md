@@ -14,13 +14,13 @@ PharmaXLedger is a state-of-the-art pharmaceutical supply chain management platf
 
 PharmaXLedger now features high-fidelity, role-specific dashboards for key supply chain stakeholders.
 
-````carousel
+
 ![Identity Hub](public/screenshots/login-page.png)
 <!-- slide -->
 ![Manufacturer Inventory](public/screenshots/inventory-page.png)
 <!-- slide -->
 ![Shipment Orchestration](public/screenshots/shipments-page.png)
-````
+
 
 ### Key Capabilities:
 - **Manufacturer Hub**: High-detail inventory management and batch registration logic.
