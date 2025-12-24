@@ -10,8 +10,44 @@ PharmaXLedger is a state-of-the-art pharmaceutical supply chain management platf
 
 ---
 
+## 🖥️ Executive Dashboards (Phase 1.1)
+
+PharmaXLedger now features high-fidelity, role-specific dashboards for key supply chain stakeholders.
+
+````carousel
+![Identity Hub](public/screenshots/login-page.png)
+<!-- slide -->
+![Manufacturer Inventory](public/screenshots/inventory-page.png)
+<!-- slide -->
+![Shipment Orchestration](public/screenshots/shipments-page.png)
+````
+
+### Key Capabilities:
+- **Manufacturer Hub**: High-detail inventory management and batch registration logic.
+- **Logistics Orchestration**: Real-time tracking of custody transfers and shipment progress.
+- **Identity Hub**: Secure, glassmorphism-based authentication via Supabase Auth.
+- **Digital Ledger**: Every action (Manufacture, Ship, Receive, Dispense) is recorded as a high-integrity transaction.
+
+## ⚙️ Environment Setup
+
+To enable the full functionality of the Ledger, you must configure your Supabase credentials in a `.env` file at the root of the project:
+
+```env
+# Database connection for Prisma
+DATABASE_URL="postgresql://postgres:[PASSWORD]@[HOST]:5432/postgres?schema=public"
+
+# Supabase Auth & API Configuration
+NEXT_PUBLIC_SUPABASE_URL="https://your-project-id.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
+```
+
+> [!IMPORTANT]
+> Ensure that your Supabase roles match the expected `Role` enum in `schema.prisma` (MANUFACTURER, DISTRIBUTOR, PHARMACIST, PATIENT) to allow proper routing.
+
+---
 
 ## 🏗️ Architectural Overview
+
 
 ### Phase 1: Robust Centralized Ledger
 - **Framework**: Next.js 15 (App Router, Server Actions)
