@@ -14,19 +14,39 @@ PharmaXLedger is a state-of-the-art pharmaceutical supply chain management platf
 
 PharmaXLedger now features high-fidelity, role-specific dashboards for key supply chain stakeholders.
 
-````carousel
+
 ![Identity Hub](public/screenshots/login-page.png)
 <!-- slide -->
 ![Manufacturer Inventory](public/screenshots/inventory-page.png)
 <!-- slide -->
 ![Shipment Orchestration](public/screenshots/shipments-page.png)
-````
+
 
 ### Key Capabilities:
 - **Manufacturer Hub**: High-detail inventory management and batch registration logic.
 - **Logistics Orchestration**: Real-time tracking of custody transfers and shipment progress.
 - **Identity Hub**: Secure, glassmorphism-based authentication via Supabase Auth.
 - **Digital Ledger**: Every action (Manufacture, Ship, Receive, Dispense) is recorded as a high-integrity transaction.
+
+---
+
+## 🧬 Digital Provenance & QR Tracking (Phase 1.2)
+
+PharmaXLedger now provides full end-to-end transparency with a integrated digital identity system.
+
+
+![Batch QR Identity](public/screenshots/inventory_qr_modal_1766607844662.png)
+<!-- slide -->
+![Public Provenance Ledger](public/screenshots/tracking_page_batch_x001_1766607857291.png)
+
+
+### Traceability Features:
+- **Digital Twins**: Unique QR identifiers generated for every drug batch upon registration.
+- **Visual Ledger**: An interactive, animated timeline for patients to verify the journey of their medication.
+- **Integrity Validation**: Real-time monitoring of the supply chain with cryptographic "Chain-In-Tact" verification.
+- **Deep Linking**: Instant access to provenance data via mobile-ready QR codes.
+
+---
 
 ## ⚙️ Environment Setup
 
@@ -89,17 +109,19 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
 
 ```text
 PharmaXLedger/
-├── app/                # Next.js 15 App Router
-│   ├── (auth)/         # Login, Registration paths
-│   ├── dashboard/      # Stakeholder-specific views
-│   ├── api/            # Server Action endpoints
-│   └── layout.tsx      # Global theme & glassmorphism layout
-├── components/         # Premium Shadcn UI components
-├── lib/                # Prisma client, validation logic, utils
-├── prisma/             # Schema definitions and migrations
-├── public/             # High-res assets & drug logos
-└── styles/             # Global CSS & Tailwind config
+├── prisma/             # Schema definitions and database configuration
+├── public/             # High-res screenshots, logos, and static assets
+└── src/
+    ├── app/            # Next.js 15 App Router (Dashboards, Routing, Auth)
+    │   ├── (auth)/     # Secure Login & Identity Hub
+    │   ├── dashboard/  # Role-specific stakeholder environments
+    │   ├── track/      # Public provenance ledger engine
+    │   └── layout.tsx  # Global glassmorphism theme & styles
+    ├── components/     # Specialized UI components (Dashboards, QR Modals)
+    ├── lib/            # Server actions, Supabase clients, and logic
+    └── styles/         # Global typography & Tailwind design tokens
 ```
+
 
 ---
 

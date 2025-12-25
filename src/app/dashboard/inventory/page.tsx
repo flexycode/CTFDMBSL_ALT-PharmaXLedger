@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Search, Filter, MoreHorizontal, Download } from "lucide-react";
+import { Plus, Search, Filter, MoreHorizontal, Download, QrCode } from "lucide-react";
+import { QRModal } from "@/components/dashboards/QRModal";
 
 export default function InventoryPage() {
     const [showAddForm, setShowAddForm] = useState(false);
+    const [selectedQR, setSelectedQR] = useState<{ id: string; name: string } | null>(null);
 
     const drugs = [
         { id: "1", name: "Humira", sku: "ADAL-40MG", batch: "BATCH-X001", expiry: "2026-12-01", status: "In Storage" },
@@ -74,7 +76,13 @@ export default function InventoryPage() {
                                         {drug.status}
                                     </span>
                                 </td>
-                                <td className="px-8 py-5 text-right">
+                                <td className="px-8 py-5 text-right flex items-center justify-end gap-2">
+                                    <button
+                                        onClick={() => setSelectedQR({ id: drug.batch, name: drug.name })}
+                                        className="p-2 text-slate-500 hover:text-blue-400 transition-colors"
+                                    >
+                                        <QrCode className="w-5 h-5" />
+                                    </button>
                                     <button className="p-2 text-slate-500 hover:text-white transition-colors">
                                         <MoreHorizontal className="w-5 h-5" />
                                     </button>
@@ -84,6 +92,13 @@ export default function InventoryPage() {
                     </tbody>
                 </table>
             </div>
+
+            <QRModal
+                isOpen={!!selectedQR}
+                onClose={() => setSelectedQR(null)}
+                batchId={selectedQR?.id || ""}
+                drugName={selectedQR?.name || ""}
+            />
         </div>
     );
 }
