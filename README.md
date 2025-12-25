@@ -35,9 +35,9 @@ PharmaXLedger now features high-fidelity, role-specific dashboards for key suppl
 PharmaXLedger now provides full end-to-end transparency with a integrated digital identity system.
 
 
-![Batch QR Identity](public/screenshots/inventory_qr_modal_1766607844662.png)
+![Batch QR Identity](public/screenshots/inventory_qr_modal_batch_x001.png)
 <!-- slide -->
-![Public Provenance Ledger](public/screenshots/tracking_page_batch_x001_1766607857291.png)
+![Public Provenance Ledger](public/screenshots/tracking_page_batch_x001.png)
 
 
 ### Traceability Features:
