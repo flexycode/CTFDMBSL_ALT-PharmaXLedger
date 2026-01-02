@@ -154,3 +154,20 @@ This project is licensed under the **MIT License**. See the `LICENSE` file for d
 
 > [!IMPORTANT]
 > This repository is currently in **Phase 1 (Development)**. The focus is on API stability and UI excellence before moving to the blockchain integration phase.
+
+
+<!-- Genshin Impact -->
+<div align="center">
+<img src="https://media.giphy.com/media/wcVQHVg5lYsCDkxz4J/giphy.gif?cid=ecf05e47yz4oc4o3pl85zwujqt2e6xumb1fhticxniefaqmu&ep=v1_stickers_search&rid=giphy.gif&ct=s" width="300">
+</div>
+
+<!-- End point line insert Comeback again next time, feel free to modify this  -->
+<p align="center">
+<img src="https://readme-typing-svg.demolab.com/?lines=Come+Back+Again+next+time" alt="mystreak"/>
+</p>
+
+</p>
+    
+<br>
+<!-- End point insert background effect line of sight color red -->
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="1000">
