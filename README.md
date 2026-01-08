@@ -140,8 +140,9 @@ PharmaXLedger/
 
 This project is a high-stakes collaborative effort. We welcome contributions that maintain the highest standards of code integrity and security.
 
-- **Lead Developer**: [Jay Arre Talosig](https://github.com/flexycode)
-- **QA Lead**: [Brian Carlo De Vera](https://github.com/scarfer14)
+- **Blockchain Developer**: [Jay Arre Talosig](https://github.com/flexycode)
+- **QA Engineer**: [Brian Carlo De Vera](https://github.com/scarfer14)
+- **Full Stack Engineer**: [Anthonee Buno](https://github.com/Leirk04)
 - **Architecture**: [Artificial Ledger Technology](https://github.com/Artificial-Ledger-Technology)  
 
 ---
